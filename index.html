@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+    <title>TRIS Game</title>
+  </head>
+  <body>
+    <div id="game-container">
+      <canvas id="tris-canvas" width="300" height="600"></canvas>
+
+      <div class="sidebar">
+        <h1 class="title">TRIS</h1>
+
+        <div class="ui-group">
+          <label>LEVEL</label>
+          <div class="display-box" id="level-box">1</div>
+        </div>
+
+        <div class="ui-group">
+          <label>SCORE</label>
+          <div class="display-box" id="score-box">0</div>
+        </div>
+
+        <div class="ui-group next-piece-group">
+          <label>NEXT PIECE</label>
+          <div class="display-box next-piece-box">
+            <canvas id="next-canvas" width="80" height="80"></canvas>
+          </div>
+        </div>
+
+        <button id="menu-btn">MENU</button>
+      </div>
+
+      <div id="game-over-overlay" class="hidden">
+        <h2>GAME OVER</h2>
+        <p>SCORE: <span id="final-score">0</span></p>
+        <button id="restart-btn">PLAY AGAIN</button>
+      </div>
+
+      <div id="pause-overlay" class="hidden">
+        <h2>PAUSED</h2>
+        <button id="resume-btn">RESUME</button>
+        <button id="pause-restart-btn">RESTART</button>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
