@@ -477,12 +477,12 @@ class Game {
     // --- Touch ---
     let startX, startY, lastX, lastY, startTime;
     let isDragging = false;
-    const touchArea = document.getElementById("game-container");
+    const touchArea = document.getElementById("tris-canvas");
 
     touchArea.addEventListener(
       "touchstart",
       (e) => {
-        if (this.gameOver) return;
+        if (this.gameOver || this.isPaused) return;
         e.preventDefault();
         const t = e.touches[0];
         startX = t.clientX;
@@ -498,7 +498,7 @@ class Game {
     touchArea.addEventListener(
       "touchmove",
       (e) => {
-        if (this.gameOver) return;
+        if (this.gameOver || this.isPaused) return;
         e.preventDefault();
 
         const t = e.touches[0];
@@ -522,7 +522,7 @@ class Game {
     touchArea.addEventListener(
       "touchend",
       (e) => {
-        if (this.gameOver) return;
+        if (this.gameOver || this.isPaused) return;
         e.preventDefault();
 
         const dt = Date.now() - startTime;
