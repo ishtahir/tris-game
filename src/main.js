@@ -4,7 +4,7 @@ import { Renderer, CELL } from "./render.js";
 const STAGE_W = 320; // original iPhone width in points: 230 board + 90 sidebar
 const MAX_ROWS = 40;
 const SAVE_KEY = "tris.save";
-const SCORES_KEY = "tris.highscores";
+const SCORES_KEY = "tris.highscores"; // classic; other modes get a suffix
 const TAP_MS = 500;
 
 const $ = (id) => document.getElementById(id);
@@ -59,19 +59,21 @@ function save() {
   else localStorage.removeItem(SAVE_KEY);
 }
 
-function loadScores() {
+const scoresKey = (mode) => (mode === "classic" ? SCORES_KEY : `${SCORES_KEY}.${mode}`);
+
+function loadScores(mode) {
   try {
-    return JSON.parse(localStorage.getItem(SCORES_KEY)) || [];
+    return JSON.parse(localStorage.getItem(scoresKey(mode))) || [];
   } catch {
     return [];
   }
 }
 
-/** Adds a score to the top 10 and returns its rank (0-based), or -1. */
-function recordScore(score) {
+/** Adds a score to the mode's top 10 and returns its rank (0-based), or -1. */
+function recordScore(mode, score) {
   const entry = { score, date: Date.now() };
-  const top = [...loadScores(), entry].sort((a, b) => b.score - a.score).slice(0, 10);
-  localStorage.setItem(SCORES_KEY, JSON.stringify(top));
+  const top = [...loadScores(mode), entry].sort((a, b) => b.score - a.score).slice(0, 10);
+  localStorage.setItem(scoresKey(mode), JSON.stringify(top));
   latestScore = top.includes(entry) ? entry.date : null;
   return top.indexOf(entry);
 }
@@ -97,8 +99,8 @@ function pause() {
   show("menu");
 }
 
-function newGame() {
-  game = new Tris({ rows: fitRows() });
+function newGame(mode) {
+  game = new Tris({ rows: fitRows(), mode });
   layout();
   save();
   play();
@@ -106,9 +108,17 @@ function newGame() {
 
 function showScores(from) {
   scoresReturn = from;
+  renderScores(game ? game.mode : "classic");
+  show("scores");
+}
+
+function renderScores(mode) {
+  for (const tab of document.querySelectorAll(".tab")) {
+    tab.classList.toggle("active", tab.dataset.mode === mode);
+  }
   const list = $("scores-list");
   list.replaceChildren();
-  const scores = loadScores();
+  const scores = loadScores(mode);
   if (!scores.length) {
     const li = document.createElement("li");
     li.className = "empty";
@@ -121,12 +131,13 @@ function showScores(from) {
     if (date === latestScore) li.classList.add("latest");
     list.append(li);
   }
-  show("scores");
 }
 
 function gameOver() {
   save();
-  const rank = game.score > 0 ? recordScore(game.score) : -1;
+  const rank = game.score > 0 ? recordScore(game.mode, game.score) : -1;
+  $("over-title").textContent = game.timeUp ? "TIME'S UP" : "GAME OVER";
+  $("over-mode").textContent = game.mode === "classic" ? "" : game.mode.toUpperCase();
   $("final-score").textContent = game.score;
   $("final-rank").textContent =
     rank === 0 ? "NEW HIGH SCORE!" : rank > 0 ? `#${rank + 1} HIGH SCORE` : "";
@@ -134,8 +145,12 @@ function gameOver() {
 }
 
 $("resume-btn").addEventListener("click", play);
-$("new-game-btn").addEventListener("click", newGame);
-$("again-btn").addEventListener("click", newGame);
+$("classic-btn").addEventListener("click", () => newGame("classic"));
+$("blitz-btn").addEventListener("click", () => newGame("blitz"));
+$("again-btn").addEventListener("click", () => newGame(game.mode));
+for (const tab of document.querySelectorAll(".tab")) {
+  tab.addEventListener("click", () => renderScores(tab.dataset.mode));
+}
 $("scores-btn").addEventListener("click", () => showScores("menu"));
 $("over-scores-btn").addEventListener("click", () => showScores("over"));
 $("scores-back-btn").addEventListener("click", () => show(scoresReturn));
@@ -267,7 +282,13 @@ window.addEventListener("pagehide", save);
 
 let last = performance.now();
 let savedPiece = 0;
-const hud = { level: $("level-box"), score: $("score-box") };
+const hud = { level: $("level-box"), score: $("score-box"), time: $("time-box") };
+
+/** 83500 ms -> "1:24" (rounded up, so the clock reads 0:00 only at the end). */
+function formatTime(ms) {
+  const secs = Math.ceil(ms / 1000);
+  return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
+}
 
 function tick(now) {
   // Clamp so a long frame (e.g. after backgrounding) can't skip rows.
@@ -288,6 +309,14 @@ function tick(now) {
   const score = String(game ? game.score : 0);
   if (hud.level.textContent !== level) hud.level.textContent = level;
   if (hud.score.textContent !== score) hud.score.textContent = score;
+
+  const timed = game?.timeLeft != null;
+  stage.classList.toggle("blitz", timed);
+  if (timed) {
+    const time = formatTime(game.timeLeft);
+    if (hud.time.textContent !== time) hud.time.textContent = time;
+    hud.time.classList.toggle("low", game.timeLeft <= 10_000);
+  }
 
   requestAnimationFrame(tick);
 }

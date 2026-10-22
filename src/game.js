@@ -11,6 +11,10 @@
  *   partly above it, and the game only ends when nothing fits or a piece
  *   locks without being fully on the board.
  * - Level is driven by score, and gravity speeds up a little each level.
+ *
+ * Modes:
+ * - classic: play until you top out.
+ * - blitz: score as much as you can in 2 minutes; the level rises with time.
  */
 
 export const COLS = 10;
@@ -65,6 +69,10 @@ const MIN_INTERVAL = 70;
 const MIN_LOCK_DELAY = 400; // a landed piece can always be slid for at least this long
 export const CLEAR_DURATION = 100; // ms the cleared rows flash before collapsing
 
+export const MODES = ["classic", "blitz"];
+export const BLITZ_TIME = 120_000;
+const BLITZ_LEVEL_TIME = 15_000; // blitz levels up every 15 seconds
+
 // Offsets tried, in order, when a rotation is blocked.
 const KICKS = [
   [1, 0],
@@ -107,9 +115,10 @@ function createPiece(type, id) {
 const emptyRow = () => Array(COLS).fill(null);
 
 export class Tris {
-  constructor({ random = Math.random, rows = ROWS } = {}) {
+  constructor({ random = Math.random, rows = ROWS, mode = "classic" } = {}) {
     this.random = random;
     this.rows = rows;
+    this.mode = mode;
     this.reset();
   }
 
@@ -118,7 +127,9 @@ export class Tris {
     this.score = 0;
     this.level = 1;
     this.lines = 0;
+    this.elapsed = 0;
     this.over = false;
+    this.timeUp = false;
     this.piece = null;
     this.clearing = null;
     this.pieceCount = 0;
@@ -136,6 +147,11 @@ export class Tris {
 
   get lockDelay() {
     return Math.max(this.dropInterval, MIN_LOCK_DELAY);
+  }
+
+  /** Milliseconds left in a timed mode, or null if untimed. */
+  get timeLeft() {
+    return this.mode === "blitz" ? Math.max(0, BLITZ_TIME - this.elapsed) : null;
   }
 
   spawn() {
@@ -230,6 +246,14 @@ export class Tris {
   update(dt) {
     if (this.over) return;
 
+    this.elapsed += dt;
+    if (this.timeLeft === 0) {
+      this.over = true;
+      this.timeUp = true;
+      return;
+    }
+    this.updateLevel();
+
     if (this.clearing) {
       this.clearing.elapsed += dt;
       if (this.clearing.elapsed >= CLEAR_DURATION) this.collapse();
@@ -289,11 +313,20 @@ export class Tris {
 
   addScore(points) {
     this.score += points;
-    this.level = Math.floor(this.score / POINTS_PER_LEVEL) + 1;
+    this.updateLevel();
+  }
+
+  updateLevel() {
+    this.level =
+      this.mode === "blitz"
+        ? Math.floor(this.elapsed / BLITZ_LEVEL_TIME) + 1
+        : Math.floor(this.score / POINTS_PER_LEVEL) + 1;
   }
 
   toJSON() {
     return {
+      mode: this.mode,
+      elapsed: this.elapsed,
       grid: this.grid,
       score: this.score,
       lines: this.lines,
@@ -305,7 +338,8 @@ export class Tris {
   }
 
   static fromJSON(data, options) {
-    const game = new Tris({ ...options, rows: data.grid.length });
+    const game = new Tris({ ...options, rows: data.grid.length, mode: data.mode ?? "classic" });
+    game.elapsed = data.elapsed ?? 0;
     game.grid = data.grid;
     game.lines = data.lines ?? 0;
     game.next = data.next;

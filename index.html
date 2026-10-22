@@ -26,22 +26,28 @@
 
           <div id="menu" class="overlay">
             <button class="pill" id="resume-btn">RESUME</button>
-            <button class="pill" id="new-game-btn">NEW GAME</button>
+            <button class="pill" id="classic-btn">CLASSIC</button>
+            <button class="pill" id="blitz-btn">BLITZ</button>
             <button class="pill" id="scores-btn">HIGH SCORES</button>
             <p class="hint">DRAG TO MOVE &middot; TAP TO ROTATE</p>
           </div>
 
           <div id="scores" class="overlay hidden">
             <h2>HIGH SCORES</h2>
+            <div class="tabs">
+              <button class="tab" data-mode="classic">CLASSIC</button>
+              <button class="tab" data-mode="blitz">BLITZ</button>
+            </div>
             <ol id="scores-list"></ol>
             <button class="pill" id="scores-back-btn">BACK</button>
           </div>
 
           <div id="game-over" class="overlay hidden">
-            <h2>GAME OVER</h2>
+            <h2 id="over-title">GAME OVER</h2>
+            <p class="mode-tag" id="over-mode"></p>
             <p class="final-score" id="final-score">0</p>
             <p class="rank" id="final-rank"></p>
-            <button class="pill" id="again-btn">NEW GAME</button>
+            <button class="pill" id="again-btn">PLAY AGAIN</button>
             <button class="pill" id="over-scores-btn">HIGH SCORES</button>
           </div>
         </div>
@@ -59,6 +65,9 @@
           <div class="display-box next-box">
             <canvas id="next-canvas" width="68" height="66"></canvas>
           </div>
+
+          <div class="label time-label blitz-only">TIME</div>
+          <div class="display-box time-box blitz-only" id="time-box">2:00</div>
 
           <button id="menu-btn">MENU</button>
         </aside>

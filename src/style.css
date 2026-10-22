@@ -154,6 +154,26 @@ body {
   background: #747474;
 }
 
+.time-label {
+  top: 325px;
+}
+.time-box {
+  top: 338px;
+  height: 24px;
+  line-height: 25px;
+}
+.time-box.low {
+  color: #ffe81c;
+}
+
+/* Timer only shows in timed modes. */
+.blitz-only {
+  display: none;
+}
+#stage.blitz .blitz-only {
+  display: block;
+}
+
 #next-canvas {
   display: block;
   width: 68px;
@@ -244,6 +264,50 @@ body {
   font-weight: bold;
   letter-spacing: 0.5px;
   color: #ffe81c;
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 4px;
+}
+
+.tab {
+  width: 75px;
+  height: 24px;
+  border: 1px solid #2c2c2c;
+  background: linear-gradient(180deg, #4a4a4a, #333);
+  color: #9a9a9a;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
+.tab:first-child {
+  border-radius: 12px 0 0 12px;
+}
+.tab:last-child {
+  border-radius: 0 12px 12px 0;
+  border-left: none;
+}
+
+.tab.active {
+  background: linear-gradient(180deg, #d8d8d8 0%, #a2a2a2 12%, #8e8e8e 50%, #7c7c7c 51%, #8a8a8a 100%);
+  color: #383838;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.mode-tag {
+  margin-top: -10px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #8a8a8a;
+}
+
+.mode-tag:empty {
+  display: none;
 }
 
 #scores-list {

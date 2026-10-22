@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { Tris, COLS, ROWS, cellsOf, POINTS_PER_LEVEL, CLEAR_DURATION } from "../src/game.js";
+import { Tris, COLS, ROWS, cellsOf, POINTS_PER_LEVEL, CLEAR_DURATION, BLITZ_TIME } from "../src/game.js";
 
 // Deterministic piece sequence: always returns the given type.
 const always = (type) => {
@@ -141,6 +141,45 @@ test("taller boards use their own row count", () => {
   assert.equal(game.grid[26][4], "O");
   const restored = Tris.fromJSON(JSON.parse(JSON.stringify(game)));
   assert.equal(restored.rows, 27);
+});
+
+test("blitz ends when the clock runs out", () => {
+  const game = new Tris({ random: always("O"), mode: "blitz" });
+  assert.equal(game.timeLeft, BLITZ_TIME);
+  for (let t = 0; t < BLITZ_TIME - 100; t += 100) {
+    game.update(100);
+    game.piece.y = 0; // hold the piece up so it never locks
+  }
+  assert.equal(game.timeLeft, 100);
+  game.update(100);
+  assert.ok(game.over);
+  assert.ok(game.timeUp);
+});
+
+test("blitz levels up with time, not score", () => {
+  const game = new Tris({ random: always("T"), mode: "blitz" });
+  game.addScore(POINTS_PER_LEVEL * 3);
+  assert.equal(game.level, 1);
+  for (let i = 0; i < 30; i++) {
+    game.update(1000);
+    game.piece.y = 0; // hold the piece up so it never locks
+  }
+  assert.equal(game.level, 3);
+});
+
+test("classic has no clock", () => {
+  const game = new Tris({ random: always("T") });
+  assert.equal(game.timeLeft, null);
+  game.update(BLITZ_TIME * 2);
+  assert.ok(!game.timeUp);
+});
+
+test("blitz save keeps mode and remaining time", () => {
+  const game = new Tris({ random: always("T"), mode: "blitz" });
+  game.update(500);
+  const restored = Tris.fromJSON(JSON.parse(JSON.stringify(game)));
+  assert.equal(restored.mode, "blitz");
+  assert.equal(restored.timeLeft, BLITZ_TIME - 500);
 });
 
 test("save and restore round-trips", () => {
