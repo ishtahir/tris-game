@@ -4,48 +4,64 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Tris" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icon-180.png" />
+    <link rel="icon" type="image/png" href="/icon-180.png" />
     <link rel="stylesheet" href="/src/style.css" />
-    <title>TRIS Game</title>
+    <title>Tris</title>
   </head>
   <body>
-    <div id="game-container">
-      <canvas id="tris-canvas" width="300" height="600"></canvas>
+    <div id="frame">
+      <!-- Laid out in the original iPhone's 320x460 points, scaled to fit. -->
+      <div id="stage">
+        <div id="board">
+          <canvas id="tris-canvas"></canvas>
 
-      <div class="sidebar">
-        <h1 class="title">TRIS</h1>
+          <div id="menu" class="overlay">
+            <button class="pill" id="resume-btn">RESUME</button>
+            <button class="pill" id="new-game-btn">NEW GAME</button>
+            <button class="pill" id="scores-btn">HIGH SCORES</button>
+            <p class="hint">DRAG TO MOVE &middot; TAP TO ROTATE</p>
+          </div>
 
-        <div class="ui-group">
-          <label>LEVEL</label>
-          <div class="display-box" id="level-box">1</div>
-        </div>
+          <div id="scores" class="overlay hidden">
+            <h2>HIGH SCORES</h2>
+            <ol id="scores-list"></ol>
+            <button class="pill" id="scores-back-btn">BACK</button>
+          </div>
 
-        <div class="ui-group">
-          <label>SCORE</label>
-          <div class="display-box" id="score-box">0</div>
-        </div>
-
-        <div class="ui-group next-piece-group">
-          <label>NEXT PIECE</label>
-          <div class="display-box next-piece-box">
-            <canvas id="next-canvas" width="80" height="80"></canvas>
+          <div id="game-over" class="overlay hidden">
+            <h2>GAME OVER</h2>
+            <p class="final-score" id="final-score">0</p>
+            <p class="rank" id="final-rank"></p>
+            <button class="pill" id="again-btn">NEW GAME</button>
+            <button class="pill" id="over-scores-btn">HIGH SCORES</button>
           </div>
         </div>
 
-        <button id="menu-btn">MENU</button>
-      </div>
+        <aside class="sidebar">
+          <h1 class="title">TRIS</h1>
 
-      <div id="game-over-overlay" class="hidden">
-        <h2>GAME OVER</h2>
-        <p>SCORE: <span id="final-score">0</span></p>
-        <button id="restart-btn">PLAY AGAIN</button>
-      </div>
+          <div class="label level-label">LEVEL</div>
+          <div class="display-box level-box" id="level-box">1</div>
 
-      <div id="pause-overlay" class="hidden">
-        <h2>PAUSED</h2>
-        <button id="resume-btn">RESUME</button>
-        <button id="pause-restart-btn">RESTART</button>
+          <div class="label score-label">SCORE</div>
+          <div class="display-box score-box" id="score-box">0</div>
+
+          <div class="label next-label">NEXT PIECE</div>
+          <div class="display-box next-box">
+            <canvas id="next-canvas" width="68" height="66"></canvas>
+          </div>
+
+          <button id="menu-btn">MENU</button>
+        </aside>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>
